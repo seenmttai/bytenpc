@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ByteNPC</title>
+<meta name="description" content="Talk to a 50M-parameter fantasy NPC model trained from scratch. Runs entirely in your browser.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>ByteNPC</h1>
+    <p class="tag">A 50M-parameter language model trained from scratch to play fantasy NPCs. It runs entirely in your browser, and nothing you type leaves your device.</p>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <section class="chat card" aria-label="Chat">
+    <div class="chat-head">
+      <div>
+        <div class="scene-name" id="sceneName">-</div>
+        <div class="who" id="who"></div>
+      </div>
+      <button class="ghost" id="sceneToggle" aria-expanded="false" aria-controls="sceneEditor">Scene</button>
+    </div>
+
+    <div class="scene-editor" id="sceneEditor" hidden>
+      <label>Preset
+        <select id="preset"></select>
+      </label>
+      <div class="row2">
+        <label>Place name <input id="sName" maxlength="60"></label>
+        <label>Kind of place <input id="sCat" maxlength="40"></label>
+      </div>
+      <label>Description <textarea id="sDesc" rows="2" maxlength="300"></textarea></label>
+      <label>Background <textarea id="sBack" rows="2" maxlength="300"></textarea></label>
+      <div class="row2">
+        <label>You are <input id="uName" maxlength="30"></label>
+        <label>They are <input id="bName" maxlength="30"></label>
+      </div>
+      <label>Your persona <textarea id="uPer" rows="2" maxlength="300"></textarea></label>
+      <label>Their persona <textarea id="bPer" rows="2" maxlength="300"></textarea></label>
+      <div class="btns"><button id="applyScene">Start this scene</button></div>
+    </div>
+
+    <div class="log" id="log" aria-live="polite"></div>
+
+    <div class="status" id="status">Loading…</div>
+    <div class="bar" id="barWrap" hidden><div id="bar"></div></div>
+
+    <form class="input" id="form" autocomplete="off">
+      <input id="msg" maxlength="400" placeholder="Say something…" disabled aria-label="Your message">
+      <button id="send" disabled>Send</button>
+    </form>
+    <div class="tools">
+      <button class="ghost" id="first" disabled>Let them speak first</button>
+      <button class="ghost" id="retry" disabled>Retry</button>
+      <button class="ghost" id="undo" disabled>Undo</button>
+      <button class="ghost" id="reset" disabled>Reset</button>
+      <label class="temp">Creativity <input type="range" id="temp" min="0.1" max="1.2" step="0.05" value="0.5"><span id="tempv">0.50</span></label>
+    </div>
+  </section>
+
+  <section class="about card" aria-label="About the model">
+    <h2>What this is</h2>
+    <p>ByteNPC is a 49.2M-parameter decoder-only transformer, pretrained from scratch and then fine-tuned to play one character in a short fantasy scene. You play the other character. The scene's place and both personas are part of the prompt, so you can change them with the <em>Scene</em> button.</p>
+
+    <h3>How it was made</h3>
+    <ol>
+      <li><strong>Pretraining from scratch</strong> on all of TinyStories and SimpleStories, about 1.08 billion tokens in one pass, on Kaggle (2× T4). We also trained the 8,192-token byte-level BPE tokenizer ourselves.</li>
+      <li><strong>Supervised fine-tuning</strong> on all 8,307 training dialogues of LIGHT, a crowdsourced fantasy text-adventure dataset with settings, personas and in-character talk.</li>
+      <li><strong>DPO</strong> on 2,000 preference pairs: the human reply was the preferred answer, and the model's own sample was the rejected one.</li>
+    </ol>
+
+    <h3>Architecture</h3>
+    <p>Llama-style: 14 layers, width 512, 8 attention heads, RoPE, RMSNorm, SwiGLU feed-forward (1,408), tied input/output embeddings, 1,024-token context.</p>
+
+    <h3>Experiments along the way</h3>
+    <ul>
+      <li><strong>Looped transformer.</strong> We built a variant that re-runs only a middle span of layers instead of the whole stack: 12 blocks, with blocks 5–8 run twice for 16 block executions per token. Each extra pass costs decode speed, so we looped only part of the network. In blind tests, though, it was not better than the same model without the loop. This page serves the plain model.</li>
+      <li><strong>On-device speed.</strong> A custom CPU decoder (fast-core pinning, fused weights, KV-cache reuse between turns) took phone inference from 1–2 to about 35 tokens/s.</li>
+      <li><strong>More data.</strong> Extra dialogue data (4,000 SODA conversations, or up to 5.7k generated scenes) and a second DPO round did not measurably beat this model in blind pairwise tests.</li>
+    </ul>
+
+    <h3>How good is it?</h3>
+    <p>A blind LLM judge scored its replies 3.11/5 on held-out LIGHT scenes, against 4.49 for the human-written replies. It is small: expect it to dodge questions, lose track of who it is, or repeat itself. If a reply misses, press <em>Retry</em> or lower the creativity setting.</p>
+
+    <h3>Under the hood</h3>
+    <p>The model is an 8-bit (Q8_0) GGUF file of about 50 MB, run by <a href="https://github.com/ngxson/wllama">wllama</a> (llama.cpp compiled to WebAssembly). It downloads once and is then cached by your browser.</p>
+  </section>
+</main>
+
+<footer class="wrap foot">Training data: TinyStories, SimpleStories, LIGHT (ParlAI). Inference: wllama / llama.cpp (MIT).</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
