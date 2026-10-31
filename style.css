@@ -19,10 +19,10 @@ h1 { margin: 0; font: 700 2rem/1.1 Georgia, "Times New Roman", serif; letter-spa
 @media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
 .chat { display: flex; flex-direction: column; gap: 10px; }
-@media (min-width: 861px) { .chat { position: sticky; top: 12px; } }
 .chat-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .scene-name { font: 700 1.15rem Georgia, serif; }
 .who { color: var(--muted); font-size: .9rem; }
+.scene-editor[hidden] { display: none; }
 .scene-editor { display: grid; gap: 8px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; }
 .scene-editor label { display: grid; gap: 3px; font-size: .85rem; color: var(--muted); }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
